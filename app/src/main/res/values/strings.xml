@@ -1,0 +1,61 @@
+<resources>
+    <string name="app_name">Fend</string>
+    <string name="action_search">Search</string>
+    <string name="search_hint">Search for owner of lost and found item by ID No.,...</string>
+    <string name="card_photo">Loading ID card image...</string>
+    <string name="input_hint">Type here...</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="login">Log in</string>
+    <string name="sign_up_redirect">Don\'t have an account, click here to sign up!</string>
+    <string name="register">Register</string>
+    <string name="sign_in_redirect">Click here to log in!</string>
+    <string name="invalid_password_length">Password length should be more than 5 letters</string>
+    <string name="blank_field">Please don\'t leave any field blank</string>
+    <string name="passwords_dont_match">Passwords don\'t match</string>
+    <string name="logo">Loading logo...</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="add_items">Add more items</string>
+    <string name="view_items">view all your items</string>
+    <string name="add_items_desc">Click to add a copy of your ID or Document</string>
+    <string name="view_items_desc">Click to view all your saved items</string>
+    <string name="welcome">Welcome %1$s</string>
+    <string name="loading">Loading...</string>
+    <string name="select_id_or_doc">Select ID card or Document</string>
+    <string name="id_card">ID card</string>
+    <string name="document">Document</string>
+    <string name="id_card_details">ID card details</string>
+    <string name="doc_card_details">Document details</string>
+    <string name="card_type">Type of ID card</string>
+    <string name="name_on_document">Name on Document</string>
+    <string name="id_card_number">ID card number</string>
+    <string name="issue_date">Issue Date</string>
+    <string name="expiry_date">Expiry Date</string>
+    <string name="name_of_document">Name of the document</string>
+    <string name="scan_or_upload_picture">Scan or upload picture</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="user_account">User account</string>
+    <string name="account">View all the details of your account</string>
+    <string name="expiry_reminder">Turn on reminder for expiry dates of items</string>
+    <string name="logout">Logout</string>
+    <string name="name">Name</string>
+    <string name="scan_or_upload_profile_picture">Scan or upload profile picture</string>
+    <string name="emergency">Set emergency contact</string>
+    <string name="emergency_telephone">Emergency Telephone</string>
+    <string name="emergency_email">Emergency Email</string>
+    <string name="be_notified">Be notified by the App</string>
+
+    <string-array name="card_type_array">
+        <item>Ghana Card</item>
+        <item>NHIS Card</item>
+        <item>Passport</item>
+        <item>Voters Card</item>
+        <item>SSNIT Card</item>
+        <item>Staff ID</item>
+        <item>Student ID</item>
+        <item>Drivers License</item>
+        <item>Any other card</item>
+    </string-array>
+</resources>
