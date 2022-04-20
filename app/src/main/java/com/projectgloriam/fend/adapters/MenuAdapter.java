@@ -65,7 +65,7 @@ public class MenuAdapter extends RecyclerView.Adapter<MenuAdapter.MenuViewHolder
         holder.titleTextView.setText(mDataset.get(position).getTitle());
 
         //Setting the description
-        holder.titleTextView.setText(mDataset.get(position).getTitle());
+        holder.descTextView.setText(mDataset.get(position).getDescription());
 
         //Setting on click listener
         int finalPosition = position;

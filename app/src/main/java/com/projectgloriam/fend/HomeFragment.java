@@ -2,24 +2,24 @@ package com.projectgloriam.fend;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.res.Resources;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -27,9 +27,9 @@ import com.projectgloriam.fend.adapters.CardAdapter;
 import com.projectgloriam.fend.adapters.DocumentAdapter;
 import com.projectgloriam.fend.adapters.MenuAdapter;
 import com.projectgloriam.fend.models.Card;
-import com.projectgloriam.fend.models.CardType;
 import com.projectgloriam.fend.models.Document;
 import com.projectgloriam.fend.models.Menu;
+import com.projectgloriam.fend.models.User;
 
 import java.util.ArrayList;
 
@@ -56,10 +56,12 @@ public class HomeFragment extends Fragment {
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.Adapter cAdapter;
     private RecyclerView.Adapter dAdapter;
-    private RecyclerView.LayoutManager layoutManager;
-
+    private RecyclerView.LayoutManager mLayoutManager, cLayoutManager, dLayoutManager;
+    private TextView welcome;
     // Access a Cloud Firestore instance
     FirebaseFirestore db;
+
+    private User user;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -102,6 +104,12 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        user = ((MainActivity)getActivity()).getUserProfile();
+        //Setting welcome text
+        Resources res = getResources();
+        String welcome_text = String.format(res.getString(R.string.welcome_user), user.getName());
+        welcome = view.findViewById(R.id.welcomeTextView);
+        welcome.setText(welcome_text);
 
         db = FirebaseFirestore.getInstance();
 
@@ -112,8 +120,8 @@ public class HomeFragment extends Fragment {
         menuRecyclerView.setHasFixedSize(true);
 
         // use a linear layout manager
-        layoutManager = new LinearLayoutManager(getActivity());
-        menuRecyclerView.setLayoutManager(layoutManager);
+        mLayoutManager = new LinearLayoutManager(getActivity());
+        menuRecyclerView.setLayoutManager(mLayoutManager);
 
         // specify an adapter
         ArrayList<Menu> menuDataset = new ArrayList<>();
@@ -131,12 +139,14 @@ public class HomeFragment extends Fragment {
         // in content do not change the layout size of the RecyclerView
         idsRecyclerView.setHasFixedSize(true);
 
-        docsRecyclerView.setLayoutManager(layoutManager);
+        cLayoutManager = new LinearLayoutManager(getActivity());
+        idsRecyclerView.setLayoutManager(cLayoutManager);
 
         ArrayList<Card> cDataset = new ArrayList<>();
 
         //Getting the ID cards
         db.collection("cards")
+                .whereEqualTo("uid", user.getUid())
                 .limit(3).get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
@@ -165,13 +175,15 @@ public class HomeFragment extends Fragment {
         // in content do not change the layout size of the RecyclerView
         docsRecyclerView.setHasFixedSize(true);
 
-        docsRecyclerView.setLayoutManager(layoutManager);
+        dLayoutManager = new LinearLayoutManager(getActivity());
+        docsRecyclerView.setLayoutManager(dLayoutManager);
 
         // specify an adapter
         ArrayList<Document> dDataset = new ArrayList<>();
 
         //Getting the Documents
         db.collection("documents")
+                .whereEqualTo("uid", user.getUid())
                 .limit(3).get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override

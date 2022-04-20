@@ -2,11 +2,11 @@ package com.projectgloriam.fend;
 
 import static android.content.ContentValues.TAG;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,7 +22,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class SignUpActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private EditText email, password, confirm_password;
-    Button submit;
+    Button submit, signin_redirect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +34,17 @@ public class SignUpActivity extends AppCompatActivity {
         //Handle login click
         submit = findViewById(R.id.registerButton);
 
+        signin_redirect = findViewById(R.id.signInRedirectButton);
+
         handleRegisterClick();
+        handleSignInRedirect();
+    }
+
+    private void handleSignInRedirect() {
+        signin_redirect.setOnClickListener(view -> {
+            Intent redirect = new Intent(getApplicationContext(), EmailPasswordActivity.class);
+            startActivity(redirect);
+        });
     }
 
     private void handleRegisterClick() {

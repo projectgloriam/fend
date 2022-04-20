@@ -4,12 +4,12 @@ import static android.content.ContentValues.TAG;
 
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +27,7 @@ import com.projectgloriam.fend.adapters.MenuAdapter;
 import com.projectgloriam.fend.models.Card;
 import com.projectgloriam.fend.models.Document;
 import com.projectgloriam.fend.models.Menu;
+import com.projectgloriam.fend.models.User;
 
 import java.util.ArrayList;
 
@@ -55,6 +56,8 @@ public class UserItemsFragment extends Fragment {
 
     // Access a Cloud Firestore instance
     FirebaseFirestore db;
+
+    private User user;
 
     public UserItemsFragment() {
         // Required empty public constructor
@@ -114,8 +117,12 @@ public class UserItemsFragment extends Fragment {
 
         ArrayList<Card> cDataset = new ArrayList<>();
 
+        user = ((MainActivity)getActivity()).getUserProfile();
+
         //Getting the ID cards
-        db.collection("cards").get()
+        db.collection("cards")
+                .whereEqualTo("uid", user.getUid())
+                .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
@@ -149,7 +156,9 @@ public class UserItemsFragment extends Fragment {
         ArrayList<Document> dDataset = new ArrayList<>();
 
         //Getting the Documents
-        db.collection("documents").get()
+        db.collection("documents")
+                .whereEqualTo("uid", user.getUid())
+                .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {

@@ -48,6 +48,7 @@ import com.projectgloriam.fend.helpers.UploadHelper;
 import com.projectgloriam.fend.models.Card;
 import com.projectgloriam.fend.models.CardType;
 import com.projectgloriam.fend.models.Document;
+import com.projectgloriam.fend.models.User;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -99,6 +100,8 @@ public class AddItemFragment extends Fragment {
 
     // Access a Cloud Firestore instance
     FirebaseFirestore db;
+
+    User user;
 
     public AddItemFragment() {
         // Required empty public constructor
@@ -154,6 +157,8 @@ public class AddItemFragment extends Fragment {
 
         //card type
         cardTypeSpinner = view.findViewById(R.id.cardTypeSpinner);
+
+        user = ((MainActivity)getActivity()).getUserProfile();
 
         db.collection("card_types")
                 .get()
@@ -277,7 +282,7 @@ public class AddItemFragment extends Fragment {
         //Checking if photo has been uploaded
         checkPhotoIsSet();
 
-        Document doc = new Document(documentNameText.getText().toString(), docUrl);
+        Document doc = new Document(documentNameText.getText().toString(), docUrl, user.getUid());
         db.collection("documents").document(documentNameText.getText().toString()).set(doc)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
@@ -337,7 +342,9 @@ public class AddItemFragment extends Fragment {
                                 cardTypeObj[0],
                                 issueDate,
                                 expiryDate,
-                                docUrl);
+                                docUrl,
+                                user.getUid()
+                );
 
         //Saving card
         db.collection("cards").document(card.getNumber()).set(card)

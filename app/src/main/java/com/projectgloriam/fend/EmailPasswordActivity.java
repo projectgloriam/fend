@@ -2,20 +2,19 @@ package com.projectgloriam.fend;
 
 import static android.content.ContentValues.TAG;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.SearchView;
+import androidx.appcompat.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -23,15 +22,12 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 public class EmailPasswordActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private EditText email, password;
-    Button submit;
+    Button submit, signup_redirect;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +40,18 @@ public class EmailPasswordActivity extends AppCompatActivity {
         //Handle login click
         submit = findViewById(R.id.loginButton);
 
+        signup_redirect = findViewById(R.id.signUpRedirectButton);
+
         handleLoginClick();
+
+        handleSignUpRedirect();
+    }
+
+    private void handleSignUpRedirect() {
+        signup_redirect.setOnClickListener(view -> {
+            Intent redirect = new Intent(getApplicationContext(), SignUpActivity.class);
+            startActivity(redirect);
+        });
     }
 
     private void handleLoginClick() {

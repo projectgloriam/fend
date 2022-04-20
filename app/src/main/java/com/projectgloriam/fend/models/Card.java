@@ -12,16 +12,18 @@ public class Card {
     private Date issueDate;
     private Date expiryDate;
     private String photo;
+    private String uid;
 
     public Card() {}
 
-    public Card(String number, String fullName, DocumentReference type, Date issueDate, Date expiryDate, String photo) {
+    public Card(String number, String fullName, DocumentReference type, Date issueDate, Date expiryDate, String photo, String uid) {
         this.number = number;
         this.fullName = fullName;
         this.type = type;
         this.issueDate = issueDate;
         this.expiryDate = expiryDate;
         this.photo = photo;
+        this.uid = uid;
     }
 
     public String getNumber() {
@@ -70,5 +72,9 @@ public class Card {
 
     public void setPhoto(String photo) {
         this.photo = photo;
+    }
+
+    public String getUid() {
+        return uid;
     }
 }
