@@ -52,7 +52,7 @@ public class UserItemsFragment extends Fragment {
     private RecyclerView docsRecyclerView;
     private RecyclerView.Adapter cAdapter;
     private RecyclerView.Adapter dAdapter;
-    private RecyclerView.LayoutManager layoutManager;
+    private RecyclerView.LayoutManager cLayoutManager, iLayoutManager;
 
     // Access a Cloud Firestore instance
     FirebaseFirestore db;
@@ -104,7 +104,7 @@ public class UserItemsFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
 
         // use a linear layout manager
-        layoutManager = new LinearLayoutManager(getActivity());
+        cLayoutManager = new LinearLayoutManager(getActivity());
 
         //User id cards adapter
         idsRecyclerView = view.findViewById(R.id.user_ids_recycler);
@@ -113,7 +113,7 @@ public class UserItemsFragment extends Fragment {
         // in content do not change the layout size of the RecyclerView
         idsRecyclerView.setHasFixedSize(true);
 
-        docsRecyclerView.setLayoutManager(layoutManager);
+        idsRecyclerView.setLayoutManager(cLayoutManager);
 
         ArrayList<Card> cDataset = new ArrayList<>();
 
@@ -130,18 +130,15 @@ public class UserItemsFragment extends Fragment {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 cDataset.add(document.toObject(Card.class));
                             }
+                            // specify an adapter
+                            cAdapter = new CardAdapter(cDataset, R.id.action_userItemsFragment_to_detailsFragment, getActivity());
+                            idsRecyclerView.setAdapter(cAdapter);
                         } else {
-                            Toast.makeText(getActivity(), "Error getting documents", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "Your ID card list is empty", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "Error getting ID Cards: ", task.getException());
                         }
                     }
                 });
-
-
-        // specify an adapter
-
-        cAdapter = new CardAdapter(cDataset, R.id.action_userItemsFragment_to_detailsFragment, getContext());
-        idsRecyclerView.setAdapter(cAdapter);
 
         //User documents adapter
         docsRecyclerView = view.findViewById(R.id.user_docs_recycler);
@@ -150,7 +147,10 @@ public class UserItemsFragment extends Fragment {
         // in content do not change the layout size of the RecyclerView
         docsRecyclerView.setHasFixedSize(true);
 
-        docsRecyclerView.setLayoutManager(layoutManager);
+        // use a linear layout manager
+        iLayoutManager = new LinearLayoutManager(getActivity());
+
+        docsRecyclerView.setLayoutManager(iLayoutManager);
 
         // specify an adapter
         ArrayList<Document> dDataset = new ArrayList<>();
@@ -166,14 +166,13 @@ public class UserItemsFragment extends Fragment {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 dDataset.add(document.toObject(Document.class));
                             }
+                            dAdapter = new DocumentAdapter(dDataset, R.id.action_userItemsFragment_to_detailsFragment, getActivity());
+                            docsRecyclerView.setAdapter(dAdapter);
                         } else {
-                            Toast.makeText(getActivity(), "Error getting documents", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "Your documents list is empty", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
                 });
-
-        dAdapter = new DocumentAdapter(dDataset, R.id.action_userItemsFragment_to_detailsFragment, getContext());
-        docsRecyclerView.setAdapter(dAdapter);
     }
 }

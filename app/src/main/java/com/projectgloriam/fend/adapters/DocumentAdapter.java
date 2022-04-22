@@ -1,21 +1,29 @@
 package com.projectgloriam.fend.adapters;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.projectgloriam.fend.HomeFragmentDirections;
+import com.projectgloriam.fend.MainActivity;
 import com.projectgloriam.fend.R;
 import com.projectgloriam.fend.UserItemsFragmentDirections;
 import com.projectgloriam.fend.models.Card;
@@ -84,11 +92,20 @@ public class DocumentAdapter extends RecyclerView.Adapter<DocumentAdapter.ItemVi
         //Setting the title
         holder.titleTextView.setText(docDataset.get(position).getName());
 
-        Glide.with(holder.imageView.getContext())
-                .load(docDataset.get(position).getPhoto())
-                .placeholder(R.drawable.ic_baseline_card_24)
-                .fitCenter()
-                .into(holder.imageView);
+        ((MainActivity)context).storageRef.child(docDataset.get(position).getPhoto()).getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            @Override
+            public void onSuccess(byte[] bytes) {
+                // Use the bytes to display the image
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                holder.imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, bmp.getWidth(), bmp.getHeight(), false));
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+                Log.e(TAG, "Couldn't fetch image", exception);
+            }
+        });
 
         //Setting on click listener
         int finalPosition = position;

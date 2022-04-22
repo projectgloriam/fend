@@ -27,6 +27,7 @@
             android:id="@+id/idOrDocGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:orientation='horizontal'
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -36,6 +37,7 @@
                 android:id="@+id/idRadioButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:checked="true"
                 android:text="@string/id_card" />
 
             <RadioButton
@@ -61,9 +63,11 @@
             android:id="@+id/idGroupCardView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginLeft="32dp"
             android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginRight="32dp"
             android:elevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -77,6 +81,9 @@
                     android:id="@+id/typeTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginTop="16dp"
                     android:text="@string/card_type"
                     android:textSize="16sp"
                     app:layout_constraintStart_toStartOf="parent"
@@ -86,8 +93,7 @@
                     android:id="@+id/cardTypeSpinner"
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"
-                    android:layout_marginStart="8dp"
-                    android:entries="@array/card_type_array"
+                    android:contentDescription="@string/select_id_card"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/typeTextView"
                     app:layout_constraintTop_toTopOf="parent" />
@@ -96,6 +102,8 @@
                     android:id="@+id/editTextTextNameOnDocument"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
                     android:ems="10"
                     android:hint="@string/name_on_document"
                     android:inputType="textPersonName"
@@ -107,6 +115,8 @@
                     android:id="@+id/editTextTextIDCard"
                     android:layout_width="200dp"
                     android:layout_height="48dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginRight="16dp"
                     android:ems="10"
                     android:hint="@string/id_card_number"
                     android:inputType="textPersonName"
@@ -119,6 +129,8 @@
                     android:id="@+id/issueDateEditTextDate"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginLeft="16dp"
                     android:ems="10"
                     android:hint="@string/issue_date"
                     android:inputType="date"
@@ -130,6 +142,8 @@
                     android:id="@+id/expiryDateEditTextDate"
                     android:layout_width="200dp"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginRight="16dp"
                     android:ems="10"
                     android:hint="@string/expiry_date"
                     android:inputType="date"
@@ -145,8 +159,10 @@
             android:id="@+id/docGroupTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="@string/doc_card_details"
             android:textStyle="bold"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/idGroupCardView" />
@@ -156,8 +172,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
             android:elevation="4dp"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/docGroupTextView">
@@ -184,33 +202,36 @@
             android:id="@+id/scanOrUploadButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:layout_weight="1"
             android:backgroundTint="#00FFFFFF"
             android:textAllCaps="false"
-            android:textColor="#F0029595"
+            android:textColor="#00838F"
+            app:layout_constraintBottom_toTopOf="@+id/imagePreviewView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/docGroupCardView"
-            tools:text="@string/scan_or_upload_picture" />
+            android:text="@string/scan_or_upload_picture" />
 
         <ImageView
             android:id="@+id/imagePreviewView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:src="@drawable/ic_baseline_card_24"
+            app:layout_constraintBottom_toTopOf="@+id/saveButton"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/scanOrUploadButton" />
+            app:layout_constraintStart_toStartOf="parent" />
 
         <Button
             android:id="@+id/saveButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp"
             android:layout_weight="1"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imagePreviewView"
-            tools:text="@string/save" />
+            android:text="@string/save" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

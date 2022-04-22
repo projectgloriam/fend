@@ -47,6 +47,13 @@
     <string name="emergency_telephone">Emergency Telephone</string>
     <string name="emergency_email">Emergency Email</string>
     <string name="be_notified">Be notified by the App</string>
+    <string name="all_your_saved_items">All your saved items</string>
+    <string name="home">Home</string>
+    <string name="detail_page">Details</string>
+    <string name="profile_page">User profile page</string>
+    <string name="add_item">Add an item</string>
+    <string name="select_id_card">Select an ID card from the drop down menu</string>
+    <string name="none">None</string>
 
     <string-array name="card_type_array">
         <item>Ghana Card</item>

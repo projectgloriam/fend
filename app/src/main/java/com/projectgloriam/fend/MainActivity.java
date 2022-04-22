@@ -31,6 +31,9 @@ import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.projectgloriam.fend.models.User;
 
 
@@ -40,6 +43,10 @@ public class MainActivity extends AppCompatActivity implements
     private NavigationView navView;
     private Toolbar app_bar;
     AppBarConfiguration appBarConfiguration;
+    NavController navController;
+    private FirebaseStorage storage;
+    public StorageReference storageRef;
+    public FirebaseFirestore firebaseDb; // Access a Cloud Firestore instance
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +56,20 @@ public class MainActivity extends AppCompatActivity implements
         checkCurrentUser();
 
         initNavigationUI();
+
+        initFirebaseDb();
+
+        initFirebaseStorage();
+    }
+
+    private void initFirebaseDb() {
+        firebaseDb = FirebaseFirestore.getInstance();
+    }
+
+    private void initFirebaseStorage() {
+
+        storage = FirebaseStorage.getInstance();
+        storageRef = storage.getReference();
     }
 
     private void initNavigationUI() {
@@ -56,7 +77,7 @@ public class MainActivity extends AppCompatActivity implements
         drawerLayout = findViewById(R.id.drawer_layout);
 
         //Setting up nav controller (a navigation function) for nav fragment view
-        NavController navController = Navigation.findNavController(this, R.id.fragment);
+        navController = Navigation.findNavController(this, R.id.fragment);
         appBarConfiguration =  new AppBarConfiguration.Builder(navController.getGraph())
                 .setDrawerLayout(drawerLayout)
                 .build();
@@ -84,6 +105,13 @@ public class MainActivity extends AppCompatActivity implements
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        NavController navController = Navigation.findNavController(this, R.id.nav_view);
+        return NavigationUI.onNavDestinationSelected(item, navController)
+                || super.onOptionsItemSelected(item);
     }
 
     @Override

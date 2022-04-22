@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,6 +17,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -44,6 +46,9 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.projectgloriam.fend.helpers.UploadHelper;
 import com.projectgloriam.fend.models.Card;
 import com.projectgloriam.fend.models.CardType;
@@ -80,11 +85,11 @@ public class AddItemFragment extends Fragment {
 
     RadioButton cardOrDocRadioButton;
     RadioGroup cardOrDocRadioGroup;
-    String idCard = getResources().getString(R.string.id_card); //ID Card
-    String doc = getResources().getString(R.string.document); //Document
+    String idCard;
+    String doc;
 
     Spinner cardTypeSpinner;
-    final String[] cardType = new String[1];
+    final DocumentReference[] cardType = new DocumentReference[1];
     ArrayList<String> spinnerArray = new ArrayList<String>();
 
     TextView idTitle, docTitle;
@@ -93,15 +98,21 @@ public class AddItemFragment extends Fragment {
     Button saveButton, scanUploadButton;
 
     ImageView preview;
-    
-    String docUrl;
+
+    Uri imageUri;
+
+    String imageUrl;
 
     UploadHelper uploadHelper = new UploadHelper(this);
 
     // Access a Cloud Firestore instance
     FirebaseFirestore db;
 
+    StorageReference docImageRef;
+
     User user;
+
+    EditText documentNameText, nameText, numberText, issueDateText, expiryDateText;
 
     public AddItemFragment() {
         // Required empty public constructor
@@ -145,7 +156,10 @@ public class AddItemFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        db = FirebaseFirestore.getInstance();
+        idCard = getResources().getString(R.string.id_card); //ID Card
+        doc = getResources().getString(R.string.document); //Document
+
+        db = ((MainActivity)getActivity()).firebaseDb;
 
         idTitle = view.findViewById(R.id.idGroupTextView);
         docTitle = view.findViewById(R.id.docGroupTextView);
@@ -158,7 +172,20 @@ public class AddItemFragment extends Fragment {
         //card type
         cardTypeSpinner = view.findViewById(R.id.cardTypeSpinner);
 
+        //Name of person
+        nameText = view.findViewById(R.id.editTextTextNameOnDocument);
+
+        //Name of person
+        numberText = view.findViewById(R.id.editTextTextIDCard);
+
+        issueDateText = view.findViewById(R.id.issueDateEditTextDate);
+        expiryDateText = view.findViewById(R.id.expiryDateEditTextDate);
+
+        documentNameText = view.findViewById(R.id.editTextTextNameOfDocument);
+
         user = ((MainActivity)getActivity()).getUserProfile();
+
+        cardType[0] = null;
 
         db.collection("card_types")
                 .get()
@@ -186,7 +213,7 @@ public class AddItemFragment extends Fragment {
                                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
                                 {
                                     // do something upon option selection
-                                    cardType[0] = parent.getItemAtPosition(position).toString();
+                                    cardType[0] = db.collection("card_types").document(parent.getItemAtPosition(position).toString());
                                 }
 
                                 @Override
@@ -196,7 +223,8 @@ public class AddItemFragment extends Fragment {
                                 }
                             });
                         } else {
-                            Log.d(TAG, "Error getting documents: ", task.getException());
+                            Toast.makeText(getActivity(), "Card type list is empty", Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "Error getting card types: ", task.getException());
                         }
                     }
                 });
@@ -234,22 +262,43 @@ public class AddItemFragment extends Fragment {
         });
 
         saveButton.setOnClickListener(new View.OnClickListener(){
-
             @Override
             public void onClick(View view) {
-                //If it is an ID card...
-                if (cardOrDocRadioButton.getText().toString().equals(idCard)) {
-
-                    saveIdCard(view);
-                    //If it is an Document...
-                } else if (cardOrDocRadioButton.getText().toString().equals(doc)) {
-                    saveDocument(view);
-                }  else {
-                    Toast.makeText(getContext(), "Please select an option", Toast.LENGTH_SHORT).show();
+                //Check if option is selected
+                if(!cardOrDocRadioButton.isChecked()){
+                    Toast.makeText(getContext(), "Please select either document or ID", Toast.LENGTH_SHORT).show();
+                    return;
                 }
+
+                //Checking if photo has been uploaded
+                if (!checkPhotoIsSet())
+                    return;
+
+                uploadImage()// Register observers to listen for when the download is done or if it fails
+                        .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        Toast.makeText(getContext(), "Image upload failed. Please try again", Toast.LENGTH_SHORT).show();
+                    }
+                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        imageUrl = taskSnapshot.getMetadata().getPath();
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                        Toast.makeText(getContext(), "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+
+                        //If it is an ID card...
+                        if (cardOrDocRadioButton.getText().toString().equals(idCard)) {
+                            saveIdCard();
+                            //If it is an Document...
+                        } else if (cardOrDocRadioButton.getText().toString().equals(doc)) {
+                            saveDocument();
+                        }
+                    }
+                });
             }
         });
-
 
     }
 
@@ -274,20 +323,31 @@ public class AddItemFragment extends Fragment {
         }
     }
 
+    private UploadTask uploadImage() {
+        //Folder is either "docs" or "cards"
+        docImageRef = ((MainActivity)getActivity()).storageRef.child("images/"+imageUri.getLastPathSegment());
+        UploadTask uploadTask = docImageRef.putFile(imageUri);
 
-    private void saveDocument(View view) {
+        return uploadTask;
+    }
+
+    private void saveDocument() {
         // Send the positive button event back to the host activity
-        EditText documentNameText = view.findViewById(R.id.editTextTextNameOfDocument);
 
-        //Checking if photo has been uploaded
-        checkPhotoIsSet();
+        if(documentNameText.getText().toString().matches("")){
+            Toast.makeText(getActivity(), "Please enter the document name", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        Document doc = new Document(documentNameText.getText().toString(), docUrl, user.getUid());
+        Document doc = new Document(documentNameText.getText().toString(),
+                imageUrl,
+                user.getUid());
         db.collection("documents").document(documentNameText.getText().toString()).set(doc)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d(TAG, "DocumentSnapshot successfully written!");
+
                         navigateBackToHome();
                     }
                 })
@@ -300,17 +360,19 @@ public class AddItemFragment extends Fragment {
                 });
     }
 
-    private void saveIdCard(View view) {
-        //Name of person
-        EditText nameText = view.findViewById(R.id.editTextTextNameOnDocument);
+    private void saveIdCard() {
 
-        //Name of person
-        EditText numberText = view.findViewById(R.id.editTextTextIDCard);
+        if(numberText.getText().toString().matches("") || nameText.getText().toString().matches("") || issueDateText.getText().toString().matches("") || expiryDateText.getText().toString().matches("")){
+            Toast.makeText(getActivity(), "Please don't leave any field blank.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //Checking if photo is set
+        if (!checkPhotoIsSet())
+            return;
 
         SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
 
-        EditText issueDateText = view.findViewById(R.id.issueDateEditTextDate);
-        EditText expiryDateText = view.findViewById(R.id.expiryDateEditTextDate);
         Date issueDate = new Date();
         Date expiryDate = new Date();
 
@@ -321,28 +383,13 @@ public class AddItemFragment extends Fragment {
             e.printStackTrace();
         }
 
-        final DocumentReference[] cardTypeObj = new DocumentReference[1];
-
-        //Setting the type
-        db.collection("card_types")
-                .document(cardType[0]).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        cardTypeObj[0] = documentSnapshot.getReference();
-                    }
-                });
-
-        //Checking if photo is set
-        checkPhotoIsSet();
-
         //Creating card object
         Card card = new Card(numberText.getText().toString(),
                                 nameText.getText().toString(),
-                                cardTypeObj[0],
+                                cardType[0],
                                 issueDate,
                                 expiryDate,
-                                docUrl,
+                                imageUrl,
                                 user.getUid()
                 );
 
@@ -364,15 +411,16 @@ public class AddItemFragment extends Fragment {
                 });
     }
 
-    private void checkPhotoIsSet() {
-        if(docUrl==null){
+    private boolean checkPhotoIsSet() {
+        if(imageUri==null){
             Toast.makeText(getActivity(), "Please upload photo before saving", Toast.LENGTH_SHORT).show();
-            return;
+            return false;
         }
+        return true;
     }
 
     private void navigateBackToHome() {
-        Navigation.findNavController(getActivity(), R.id.nav_view).navigate(R.id.action_addItemFragment_to_homeFragment);
+        NavHostFragment.findNavController(this).navigate(R.id.action_addItemFragment_to_homeFragment);
     }
 
     @Override
@@ -382,10 +430,11 @@ public class AddItemFragment extends Fragment {
             if (requestCode == 1) {
                 Bitmap result = uploadHelper.takePhoto();
                 preview.setImageBitmap(result);
+                imageUri = data.getData();
             } else if (requestCode == 2) {
                 Bitmap thumbnail = uploadHelper.chosePhoto(data);
                 preview.setImageBitmap(thumbnail);
-                docUrl = uploadHelper.BitMapToString(thumbnail);
+                imageUri = data.getData();
             }
         }
     }

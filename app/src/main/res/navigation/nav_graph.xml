@@ -8,8 +8,8 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.projectgloriam.fend.HomeFragment"
-        android:label="fragment_home"
-        tools:layout="@layout/fragment_home" >
+        android:label="@string/home"
+        tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_homeFragment_to_userItemsFragment"
             app:destination="@id/userItemsFragment" />
@@ -23,8 +23,8 @@
     <fragment
         android:id="@+id/userItemsFragment"
         android:name="com.projectgloriam.fend.UserItemsFragment"
-        android:label="fragment_user_items"
-        tools:layout="@layout/fragment_user_items" >
+        android:label="@string/all_your_saved_items"
+        tools:layout="@layout/fragment_user_items">
         <action
             android:id="@+id/action_userItemsFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
@@ -35,8 +35,8 @@
     <fragment
         android:id="@+id/detailsFragment"
         android:name="com.projectgloriam.fend.DetailsFragment"
-        android:label="fragment_details"
-        tools:layout="@layout/fragment_details" >
+        android:label="@string/detail_page"
+        tools:layout="@layout/fragment_details">
         <action
             android:id="@+id/action_detailsFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
@@ -50,8 +50,8 @@
     <fragment
         android:id="@+id/accountFragment"
         android:name="com.projectgloriam.fend.AccountFragment"
-        android:label="fragment_account"
-        tools:layout="@layout/fragment_account" >
+        android:label="@string/profile_page"
+        tools:layout="@layout/fragment_account">
         <action
             android:id="@+id/action_accountFragment_to_homeFragment"
             app:destination="@id/homeFragment" />
@@ -59,8 +59,8 @@
     <fragment
         android:id="@+id/addItemFragment"
         android:name="com.projectgloriam.fend.AddItemFragment"
-        android:label="fragment_add_item"
-        tools:layout="@layout/fragment_add_item" >
+        android:label="@string/add_item"
+        tools:layout="@layout/fragment_add_item">
         <action
             android:id="@+id/action_addItemFragment_to_homeFragment"
             app:destination="@id/homeFragment" />

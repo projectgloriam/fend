@@ -1,11 +1,17 @@
 package com.projectgloriam.fend;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -47,7 +54,7 @@ public class DetailsFragment extends Fragment {
     String cardDocID;
     Boolean isDocument;
     ImageView documentImage;
-    TextView idText, nameText, typeText, issueDateText, expiryDateText;
+    TextView idText, idLabelText, nameText, nameLabelText, typeLabelText, typeText, issueDateText, issueDateLabelText, expiryDateText, expiryDateLabelText;
 
     public DetailsFragment() {
         // Required empty public constructor
@@ -98,10 +105,15 @@ public class DetailsFragment extends Fragment {
 
         documentImage = view.findViewById(R.id.cardDetailsImageView);
         idText = view.findViewById(R.id.idTextView);
+        idLabelText = view.findViewById(R.id.idLabelTextView);
         nameText = view.findViewById(R.id.fullNameTextView);
+        nameLabelText = view.findViewById(R.id.fullNameLabelTextView);
         typeText = view.findViewById(R.id.typeTextView);
+        typeLabelText = view.findViewById(R.id.typeLabelTextView);
         issueDateText = view.findViewById(R.id.issueDateTextView);
+        issueDateLabelText = view.findViewById(R.id.issueDateLabelTextView);
         expiryDateText = view.findViewById(R.id.expiryDateTextView);
+        expiryDateLabelText = view.findViewById(R.id.expiryDateLabelTextView);
 
         DateFormat dateFormat = new SimpleDateFormat("E, dd MMMM yyyy");
 
@@ -127,7 +139,8 @@ public class DetailsFragment extends Fragment {
                             expiryDateText.setText(dateFormat.format(card.getExpiryDate()));
 
                             //Setting the Type
-                            db.collection("card_types")
+                            if(card.getType() != null)
+                                db.collection("card_types")
                                     .document(card.getType().getId()).get()
                                     .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                                         @Override
@@ -138,11 +151,20 @@ public class DetailsFragment extends Fragment {
                                     });
 
                             //Setting image
-                            Glide.with(documentImage.getContext())
-                                    .load(card.getPhoto())
-                                    .placeholder(R.drawable.ic_baseline_card_24)
-                                    .fitCenter()
-                                    .into(documentImage);
+                            ((MainActivity)getActivity()).storageRef.child(card.getPhoto()).getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                @Override
+                                public void onSuccess(byte[] bytes) {
+                                    // Use the bytes to display the image
+                                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                    documentImage.setImageBitmap(Bitmap.createScaledBitmap(bmp, bmp.getWidth(), bmp.getHeight(), false));
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    // Handle any errors
+                                    Log.e(TAG, "Couldn't fetch image", exception);
+                                }
+                            });
                         }
                     });
         } else {
@@ -157,12 +179,28 @@ public class DetailsFragment extends Fragment {
                             //Setting name
                             typeText.setText(doc.getName());
 
+                            //name_of_document
+                            idLabelText.setVisibility(View.GONE);
+                            nameLabelText.setVisibility(View.GONE);
+                            typeLabelText.setText(getResources().getText(R.string.name_of_document));
+                            issueDateLabelText.setVisibility(View.GONE);
+                            expiryDateLabelText.setVisibility(View.GONE);
+
                             //Setting image
-                            Glide.with(documentImage.getContext())
-                                    .load(doc.getPhoto())
-                                    .placeholder(R.drawable.ic_baseline_card_24)
-                                    .fitCenter()
-                                    .into(documentImage);
+                            ((MainActivity)getActivity()).storageRef.child(doc.getPhoto()).getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+                                @Override
+                                public void onSuccess(byte[] bytes) {
+                                    // Use the bytes to display the image
+                                    Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                                    documentImage.setImageBitmap(Bitmap.createScaledBitmap(bmp, bmp.getWidth(), bmp.getHeight(), false));
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception exception) {
+                                    // Handle any errors
+                                    Log.e(TAG, "Couldn't fetch image", exception);
+                                }
+                            });
                         }
                     });
         }

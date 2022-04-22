@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:showIn="nav">
-        <item android:id="@+id/fragment_account"
+        <item android:id="@+id/accountFragment"
             android:icon="@drawable/ic_baseline_person_24"
             android:title="@string/user_account" />
          

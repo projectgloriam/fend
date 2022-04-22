@@ -155,18 +155,16 @@ public class HomeFragment extends Fragment {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 cDataset.add(document.toObject(Card.class));
                             }
+
+                            // specify an adapter
+                            cAdapter = new CardAdapter(cDataset, R.id.action_homeFragment_to_detailsFragment, getContext());
+                            idsRecyclerView.setAdapter(cAdapter);
                         } else {
-                            Toast.makeText(getActivity(), "Error getting documents", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "Your ID card list is empty", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "Error getting ID Cards: ", task.getException());
                         }
                     }
                 });
-
-
-        // specify an adapter
-
-        cAdapter = new CardAdapter(cDataset, R.id.action_homeFragment_to_detailsFragment, getContext());
-        idsRecyclerView.setAdapter(cAdapter);
 
         //User documents adapter
         docsRecyclerView = view.findViewById(R.id.user_docs_recycler);
@@ -192,14 +190,14 @@ public class HomeFragment extends Fragment {
                             for (QueryDocumentSnapshot document : task.getResult()) {
                                 dDataset.add(document.toObject(Document.class));
                             }
+
+                            dAdapter = new DocumentAdapter(dDataset, R.id.action_homeFragment_to_detailsFragment, getActivity());
+                            docsRecyclerView.setAdapter(dAdapter);
                         } else {
-                            Toast.makeText(getActivity(), "Error getting documents", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), "Your documents list is empty", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
                     }
                 });
-
-        dAdapter = new DocumentAdapter(dDataset, R.id.action_homeFragment_to_detailsFragment, getContext());
-        docsRecyclerView.setAdapter(dAdapter);
     }
 }

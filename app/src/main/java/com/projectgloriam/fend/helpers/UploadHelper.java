@@ -1,5 +1,7 @@
 package com.projectgloriam.fend.helpers;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -9,6 +11,8 @@ import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
@@ -18,6 +22,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 public class UploadHelper {
@@ -96,16 +101,17 @@ public class UploadHelper {
     }
 
     public Bitmap chosePhoto(Intent data){
-        Uri selectedImage = data.getData();
-        String[] filePath = { MediaStore.Images.Media.DATA };
-        Cursor c = fragment.getActivity().getContentResolver().query(selectedImage,filePath, null, null, null);
-        c.moveToFirst();
-        int columnIndex = c.getColumnIndex(filePath[0]);
-        String picturePath = c.getString(columnIndex);
-        c.close();
-        Bitmap thumbnail = (BitmapFactory.decodeFile(picturePath));
-        thumbnail=getResizedBitmap(thumbnail, 400);
-        return thumbnail;
+        try {
+            final Uri imageUri = data.getData();
+            final InputStream imageStream = fragment.getActivity().getContentResolver().openInputStream(imageUri);
+            Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+            selectedImage=getResizedBitmap(selectedImage, 400);
+            return selectedImage;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            Toast.makeText(fragment.getActivity(), "Something went wrong", Toast.LENGTH_LONG).show();
+        }
+        return null;
     }
 
     public String BitMapToString(Bitmap userImage1) {

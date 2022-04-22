@@ -133,7 +133,7 @@ public class SearchableActivity extends AppCompatActivity {
 
                         } else {
                             Toast.makeText(getApplicationContext(),
-                                    "An error occurred. Please try searching again.",
+                                    "No results",
                                     Toast.LENGTH_SHORT
                             ).show();
                         }
