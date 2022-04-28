@@ -42,7 +42,7 @@
     <string name="expiry_reminder">Turn on reminder for expiry dates of items</string>
     <string name="logout">Logout</string>
     <string name="name">Name</string>
-    <string name="scan_or_upload_profile_picture">Scan or upload profile picture</string>
+    <string name="scan_or_upload_profile_picture">Scan / Upload</string>
     <string name="emergency">Set emergency contact</string>
     <string name="emergency_telephone">Emergency Telephone</string>
     <string name="emergency_email">Emergency Email</string>
@@ -54,6 +54,7 @@
     <string name="add_item">Add an item</string>
     <string name="select_id_card">Select an ID card from the drop down menu</string>
     <string name="none">None</string>
+    <string name="account_scroll_view_description">Scroll view for account page</string>
 
     <string-array name="card_type_array">
         <item>Ghana Card</item>

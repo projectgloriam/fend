@@ -7,6 +7,9 @@ public class UserPreferences {
     String emergencyTelephone;
     boolean notify;
 
+    public UserPreferences() {
+    }
+
     public UserPreferences(String uid, boolean expiryReminder, String emergencyEmail, String emergencyTelephone, boolean notify) {
         this.uid = uid;
         this.expiryReminder = expiryReminder;

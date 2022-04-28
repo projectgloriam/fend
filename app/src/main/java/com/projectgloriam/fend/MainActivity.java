@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -37,8 +38,7 @@ import com.google.firebase.storage.StorageReference;
 import com.projectgloriam.fend.models.User;
 
 
-public class MainActivity extends AppCompatActivity implements
-        NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private NavigationView navView;
     private Toolbar app_bar;
@@ -89,6 +89,29 @@ public class MainActivity extends AppCompatActivity implements
 
         //adding navigation view of the drawer to navigation UI
         navView = findViewById(R.id.nav_view);
+        navView.setNavigationItemSelectedListener( item -> {
+            switch (item.getItemId()) {
+
+                case R.id.logout: {
+                    signOut();
+                    break;
+                }
+
+                default: {
+                    // Fallback for all other (normal) cases.
+                    boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+
+                    // This is usually done by the default ItemSelectedListener.
+                    // But there can only be one! Unfortunately.
+                    if (handled) drawerLayout.closeDrawer(navView);
+
+                    // return the result of NavigationUI call
+                    return handled;
+                }
+            }
+
+            return false;
+        });
 
         //setup Navigation View with Navigation UI
         NavigationUI.setupWithNavController(app_bar, navController, appBarConfiguration);
@@ -105,26 +128,6 @@ public class MainActivity extends AppCompatActivity implements
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
         return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        NavController navController = Navigation.findNavController(this, R.id.nav_view);
-        return NavigationUI.onNavDestinationSelected(item, navController)
-                || super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.logout: {
-                signOut();
-                break;
-            }
-        }
-
-        return false;
     }
 
     //Get the currently signed-in user
@@ -179,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "User profile updated.");
-                            Toast.makeText(MainActivity.this, "User profile updated.", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "User profile updated. Please sign out and sign back in to see changes.", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
@@ -197,7 +200,6 @@ public class MainActivity extends AppCompatActivity implements
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             Log.d(TAG, "User email address updated.");
-                            Toast.makeText(MainActivity.this, "User email address updated.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -327,7 +329,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void signOut(){
+
         FirebaseAuth.getInstance().signOut();
+
+        Intent emailPasswordActivityIntent = new Intent(this, EmailPasswordActivity.class);
+        startActivity(emailPasswordActivityIntent);
     }
 
     //Access user information

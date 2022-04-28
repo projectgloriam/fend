@@ -2,14 +2,17 @@ package com.projectgloriam.fend;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -64,7 +67,7 @@ public class AccountFragment extends Fragment {
 
     private static final int RESULT_OK = -1;
 
-    String profileUrl;
+    String profileUrl = "";
 
     public AccountFragment() {
         // Required empty public constructor
@@ -112,15 +115,29 @@ public class AccountFragment extends Fragment {
 
         user = ((MainActivity)getActivity()).getUserProfile();
 
+        profilePicture = view.findViewById(R.id.profilePhotoImageView);
+
         profilePicture.setImageURI(user.getPhotoUrl());
 
-        name = view.findViewById(R.id.nameTextView);
+        name = view.findViewById(R.id.editTextTextName);
         name.setText((String) user.getName());
 
-        email = view.findViewById(R.id.emailTextView);
+        email = view.findViewById(R.id.editTextTextEmailAddress);
         email.setText((String) user.getEmail());
 
-        password = view.findViewById(R.id.passwordTextView);
+        password = view.findViewById(R.id.editTextTextPassword);
+
+        upload = view.findViewById(R.id.photoButton);
+
+        expiry = view.findViewById(R.id.expiryReminderSwitch);
+
+        emergencyEmail = view.findViewById(R.id.editTextTextEmergencyEmailAddress);
+
+        emergencyTelephone = view.findViewById(R.id.editTextTextEmergencyTelephone);
+
+        notify = view.findViewById(R.id.notifiedSwitch);
+
+        save = view.findViewById(R.id.saveButton);
 
         //Fetching user preferences
         db.collection("user_preferences").document(user.getUid()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
@@ -132,9 +149,11 @@ public class AccountFragment extends Fragment {
                         userPreferences = document.toObject(UserPreferences.class);
 
                         //set user's preferences from firestore db
-                        setUserPreferences(view);
+                        setUserPreferences();
                         Log.d(TAG, "DocumentSnapshot data: " + document.getData());
                     } else {
+                        //Set user preferences
+                        userPreferences = new UserPreferences(user.getUid(),false,"","",false);
                         Log.d(TAG, "User has no such preferences");
                     }
                 } else {
@@ -162,17 +181,10 @@ public class AccountFragment extends Fragment {
         });
     }
 
-    private void setUserPreferences(View view) {
-        expiry = view.findViewById(R.id.expiryReminderSwitch);
+    private void setUserPreferences() {
         expiry.setChecked(userPreferences.isExpiryReminder());
-
-        emergencyEmail = view.findViewById(R.id.emergencyEmailTextView);
         emergencyEmail.setText(userPreferences.getEmergencyEmail());
-
-        emergencyTelephone = view.findViewById(R.id.emergencyTelTextView);
         emergencyTelephone.setText(userPreferences.getEmergencyTelephone());
-
-        notify = view.findViewById(R.id.notifiedSwitch);
         notify.setChecked(userPreferences.isNotify());
     }
 
@@ -206,7 +218,6 @@ public class AccountFragment extends Fragment {
 
                             //Navigate back to home
                             navigateBackToHome();
-
                             Log.d(TAG, "DocumentSnapshot successfully written!");
                         }
                     })
@@ -228,15 +239,17 @@ public class AccountFragment extends Fragment {
             if (requestCode == 1) {
                 Bitmap result = uploadHelper.takePhoto();
                 profilePicture.setImageBitmap(result);
+                profileUrl = data.getData().toString();
             } else if (requestCode == 2) {
                 Bitmap thumbnail = uploadHelper.chosePhoto(data);
                 profilePicture.setImageBitmap(thumbnail);
-                profileUrl = uploadHelper.BitMapToString(thumbnail);
+                profileUrl = data.getData().toString();
             }
         }
     }
 
     private void navigateBackToHome() {
-        Navigation.findNavController(getActivity(), R.id.nav_view).navigate(R.id.action_accountFragment_to_homeFragment);
+        NavHostFragment.findNavController(this).navigate(R.id.action_accountFragment_to_homeFragment);
     }
+
 }
