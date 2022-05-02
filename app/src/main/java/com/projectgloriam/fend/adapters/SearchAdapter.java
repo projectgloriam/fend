@@ -1,107 +1,137 @@
 package com.projectgloriam.fend.adapters;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.cardview.widget.CardView;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.projectgloriam.fend.HomeFragmentDirections;
+import com.projectgloriam.fend.MainActivity;
 import com.projectgloriam.fend.R;
+import com.projectgloriam.fend.UserItemsFragmentDirections;
 import com.projectgloriam.fend.models.Card;
 import com.projectgloriam.fend.models.CardType;
+import com.projectgloriam.fend.models.Document;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 
-public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.CardViewHolder> {
-    private HashMap<String, Card> mDataset;
-    public Context mContext;
+import android.widget.ImageView;
+
+public class SearchAdapter extends RecyclerView.Adapter<SearchAdapter.ItemViewHolder> {
+    private ArrayList<Card> cardDataset;
+    Context context;
+    Drawable iconDrawable;
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
+    public StorageReference storageRef;
 
     // Provide a reference to the views for each data item
     // Complex data items may need more than one view per item, and
     // you provide access to all the views for a data item in a view holder
-    public static class CardViewHolder extends RecyclerView.ViewHolder {
+    public static class ItemViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         public CardView cardView;
-        public ImageView card_photo;
-        public TextView full_name, card_type, card_number;
+        public TextView idTextView, typeTextView, nameTextView;
+        public ImageView imageView;
 
-        public CardViewHolder(View itemView) {
-            super(itemView);
-            cardView = itemView.findViewById(R.id.cv);
-            card_photo = itemView.findViewById(R.id.card_photo);
-            full_name = itemView.findViewById(R.id.full_name);
+        public ItemViewHolder(View v) {
+            super(v);
 
-            card_type = itemView.findViewById(R.id.card_type);
-            card_number = itemView.findViewById(R.id.card_number);
+            cardView = v.findViewById(R.id.cv);
+            typeTextView = v.findViewById(R.id.card_type);
+            idTextView = v.findViewById(R.id.card_number);
+            nameTextView = v.findViewById(R.id.full_name);
+            imageView = v.findViewById(R.id.card_photo);
         }
-
     }
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public SearchAdapter(HashMap<String, Card> myDataset, Context context) {
-
-        mDataset = myDataset;
-        mContext = context;
+    public SearchAdapter(ArrayList<Card> cDataset, Context context) {
+        this.context = context;
+        cardDataset = cDataset;
 
         // Access a Cloud Firestore instance
         db = FirebaseFirestore.getInstance();
+
+        storage = FirebaseStorage.getInstance();
+        storageRef = storage.getReference();
     }
 
     // Create new views (invoked by the layout manager)
     @Override
-    public CardViewHolder onCreateViewHolder(ViewGroup viewGroup,
-                                                               int viewType) {
+    public SearchAdapter.ItemViewHolder onCreateViewHolder(ViewGroup parent,
+                                                         int viewType) {
         // create a new view
-        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item, viewGroup, false);
-        CardViewHolder cvh = new CardViewHolder(v);
-        return cvh;
+        View v = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.search_item, parent, false);
+
+        ItemViewHolder vh = new ItemViewHolder(v);
+        return vh;
     }
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(CardViewHolder holder, int position) {
-        // - get elements from your dataset at this position
-        // - replace the contents of the views with those elements
+    public void onBindViewHolder(ItemViewHolder holder, int position) {
+        // - get element from your dataset at this position
+        // - replace the contents of the view with that element
         position = holder.getAdapterPosition();
-        holder.card_number.setText(mDataset.get(position).getNumber());
-        holder.full_name.setText(mDataset.get(position).getFullName());
-        db.collection("card_types")
-                .document(mDataset.get(position).getType().getId()).get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+        //Setting the name
+        holder.nameTextView.setText(cardDataset.get(position).getFullName());
+        //Setting the id
+        holder.idTextView.setText(cardDataset.get(position).getNumber());
+
+        //Setting the type
+        if(cardDataset.get(position).getType() != null)
+            db.collection("card_types")
+                    .document(cardDataset.get(position).getType().getId()).get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            CardType cardType = documentSnapshot.toObject(CardType.class);
+                            holder.typeTextView.setText(cardType.getName());
+                        }
+                    });
+
+        storageRef.child(cardDataset.get(position).getPhoto()).getBytes(Long.MAX_VALUE).addOnSuccessListener(new OnSuccessListener<byte[]>() {
             @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                CardType cardType = documentSnapshot.toObject(CardType.class);
-                holder.card_type.setText(cardType.getName());
+            public void onSuccess(byte[] bytes) {
+                // Use the bytes to display the image
+                Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                holder.imageView.setImageBitmap(Bitmap.createScaledBitmap(bmp, bmp.getWidth(), bmp.getHeight(), false));
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                // Handle any errors
+                Log.e(TAG, "Couldn't fetch image", exception);
             }
         });
 
-
-        Glide.with(holder.card_photo.getContext())
-                .load(mDataset.get(position).getPhoto())
-                .placeholder(R.drawable.ic_baseline_card_24)
-                .fitCenter()
-                .into(holder.card_photo);
     }
 
-    // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mDataset.size();
-    }
-
-    //override the onAttachedToRecyclerView method
-    @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        super.onAttachedToRecyclerView(recyclerView);
+        return cardDataset.size();
     }
 
 }

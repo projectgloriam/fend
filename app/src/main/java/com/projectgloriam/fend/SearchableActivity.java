@@ -14,7 +14,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
-import android.widget.SearchView;
+import androidx.appcompat.widget.SearchView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -26,6 +26,7 @@ import com.google.firebase.firestore.Source;
 import com.projectgloriam.fend.adapters.SearchAdapter;
 import com.projectgloriam.fend.models.Card;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SearchableActivity extends AppCompatActivity {
@@ -97,50 +98,42 @@ public class SearchableActivity extends AppCompatActivity {
     private void handleIntent(Intent intent){
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            // specify an adapter
 
             // Visible the progress bar
             pb.setVisibility(View.VISIBLE);
 
-            mAdapter = new SearchAdapter(doMySearch(query), getApplicationContext());
+            db.collection("cards")
+                    .orderBy("number").startAt(query).endAt(query + "\uf8ff")
+                    //.whereEqualTo("number", query)
+                    .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<QuerySnapshot> task) {
 
-            recyclerView.setAdapter(mAdapter);
+                    if (task.isSuccessful()) {
+                        ArrayList<Card> searchDataset = new ArrayList<>();
 
-            //Set progress bar visibility to none
-            pb.setVisibility(View.GONE);
-        }
-    }
-
-    private HashMap<String, Card> doMySearch(String query){
-        //TODO: Handle communication between Firebase and this android app
-
-        final HashMap<String, Card> searchDataset = new HashMap<>();
-
-        db.collection("cards")
-                //.orderBy("name").startAt(query).endAt(query + "\uf8ff")
-                .whereEqualTo("number", query)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-
-                        if (task.isSuccessful()) {
-
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                                searchDataset.put(document.getId(), document.toObject(Card.class));
-                            }
-
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                    "No results",
-                                    Toast.LENGTH_SHORT
-                            ).show();
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            Log.d(TAG, document.getId() + " => " + document.getData());
+                            searchDataset.add(document.toObject(Card.class));
                         }
-                    }
-                });
 
-        return searchDataset;
+                        mAdapter = new SearchAdapter(searchDataset, getApplicationContext());
+
+                        recyclerView.setAdapter(mAdapter);
+                    } else {
+                        Toast.makeText(getApplicationContext(),
+                                "No results",
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+
+                    //Set progress bar visibility to none
+                    pb.setVisibility(View.GONE);
+                }
+            });
+
+
+        }
     }
 
 }
