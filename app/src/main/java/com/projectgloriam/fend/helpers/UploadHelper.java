@@ -2,6 +2,9 @@ package com.projectgloriam.fend.helpers;
 
 import static android.content.ContentValues.TAG;
 
+import static androidx.camera.core.ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY;
+import static androidx.camera.core.ImageCapture.FLASH_MODE_AUTO;
+
 import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,11 +19,25 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
+import android.util.Size;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraControl;
+import androidx.camera.core.CameraInfo;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.ImageCapture;
+import androidx.camera.core.ImageCaptureException;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
+
+import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,20 +49,40 @@ import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class UploadHelper {
     private Fragment fragment;
     private String url;
     static final int REQUEST_IMAGE_CAPTURE = 1;
     String currentPhotoPath;
-    String imageFileName;
+    private ImageCapture imageCapture;
 
     public UploadHelper(Fragment fragment){
         this.fragment = fragment;
     }
 
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = fragment.getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+
+        // Save a file: path for use with ACTION_VIEW intents
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+
     public void selectImage() {
         final CharSequence[] options = { "Take Photo", "Choose from Gallery","Cancel" };
+        Executor cameraExecutor =  Executors.newSingleThreadExecutor();
         AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
         builder.setTitle("Add Photo!");
         builder.setItems(options, new DialogInterface.OnClickListener() {
@@ -53,14 +90,83 @@ public class UploadHelper {
             public void onClick(DialogInterface dialog, int item) {
                 if (options[item].equals("Take Photo"))
                 {
-                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
+                            ProcessCameraProvider.getInstance(fragment.getActivity());
 
-                    try {
+                    cameraProviderFuture.addListener(() -> {
+                        try {
+                            // Camera provider is now guaranteed to be available
+                            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+
+                            // Set up the view finder use case to display camera preview
+                            Preview preview = new Preview.Builder().build();
+
+                            // Set up the capture use case to allow users to take photos
+                            imageCapture = new ImageCapture.Builder()
+                                    .setCaptureMode(CAPTURE_MODE_MAXIMIZE_QUALITY)
+                                    .setFlashMode(FLASH_MODE_AUTO)
+                                    .build();
+
+                            // Choose the camera by requiring a lens facing
+                            CameraSelector cameraSelector = new CameraSelector.Builder()
+                                    .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                                    .build();
+
+                            ImageAnalysis imageAnalysis =
+                                    new ImageAnalysis.Builder()
+                                            .setTargetResolution(new Size(1280, 720))
+                                            .build();
+
+                            // Attach use cases to the camera with the same lifecycle owner
+                            cameraProvider.bindToLifecycle(fragment.getActivity(), cameraSelector, imageCapture, imageAnalysis, preview);
+
+                            // Connect the preview use case to the previewView
+                            //preview.setSurfaceProvider(previewView.getSurfaceProvider());
+                            // Create the File where the photo should go
+                            File photoFile = null;
+                            try {
+                                photoFile = createImageFile();
+                            } catch (IOException ex) {
+                                // Error occurred while creating the File
+                            }
+                            // Continue only if the File was successfully created
+                            if (photoFile != null) {
+                                ImageCapture.OutputFileOptions outputFileOptions =
+                                        new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+                                imageCapture.takePicture(outputFileOptions, cameraExecutor,
+                                        new ImageCapture.OnImageSavedCallback() {
+                                            @Override
+                                            public void onImageSaved(ImageCapture.OutputFileResults outputFileResults) {
+                                                Intent takePictureIntent = new Intent();
+                                                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileResults.getSavedUri());
+                                                fragment.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                                            }
+                                            @Override
+                                            public void onError(ImageCaptureException error) {
+                                                // insert your code here.
+                                                Log.d(TAG, "imageCaptureException:"+error);
+                                            }
+                                        }
+                                );
+                                /*Uri photoURI = FileProvider.getUriForFile(fragment.getActivity(),
+                                        "com.projectgloriam.fend.fileprovider",
+                                        photoFile);*/
+                            }
+
+                        } catch (InterruptedException | ExecutionException e) {
+                            // Currently no exceptions thrown. cameraProviderFuture.get()
+                            // shouldn't block since the listener is being called, so no need to
+                            // handle InterruptedException.
+                        }
+                    }, ContextCompat.getMainExecutor(fragment.getActivity()));
+
+
+                    /*try {
                         fragment.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                     } catch (ActivityNotFoundException e) {
                         // display error state to the user
                         Toast.makeText(fragment.getContext(), "An error occurred. Please try again.", Toast.LENGTH_SHORT).show();
-                    }
+                    }*/
                 }
                 else if (options[item].equals("Choose from Gallery"))
                 {

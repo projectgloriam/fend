@@ -7,7 +7,7 @@ android {
     buildToolsVersion '29.0.2'
     defaultConfig {
         applicationId "com.projectgloriam.fend"
-        minSdkVersion 19
+        minSdkVersion 21
         targetSdkVersion 31
         versionCode 1
         versionName "1.0"
@@ -69,15 +69,8 @@ dependencies {
     //Adding the Cloud Firestore Android library
     implementation 'com.google.firebase:firebase-firestore:21.4.0'
 
-    //Glide is a fast and efficient open source media management and image loading framework
-    implementation ("com.github.bumptech.glide:glide:4.9.0") {
-        exclude group: "com.android.support"
-    }
+
     annotationProcessor 'androidx.annotation:annotation:1.0.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.9.0'
-    implementation ("com.github.bumptech.glide:glide:4.9.0@aar") {
-        transitive = true
-    }
 
     implementation 'androidx.multidex:multidex:2.0.1'
 
@@ -87,6 +80,14 @@ dependencies {
     // Declare the dependency for the Cloud Storage library
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation 'com.google.firebase:firebase-storage'
+
+    // CameraX core library using the camera2 implementation
+    def camerax_version = "1.2.0-alpha01"
+
+    // The following line is optional, as the core library is included indirectly by camera-camera2
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
 
 }
 apply plugin: 'com.google.gms.google-services'
