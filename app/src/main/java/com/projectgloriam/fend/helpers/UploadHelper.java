@@ -2,12 +2,16 @@ package com.projectgloriam.fend.helpers;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Base64;
@@ -15,6 +19,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import java.io.ByteArrayOutputStream;
@@ -24,10 +29,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
 
 public class UploadHelper {
     private Fragment fragment;
     private String url;
+    static final int REQUEST_IMAGE_CAPTURE = 1;
+    String currentPhotoPath;
+    String imageFileName;
 
     public UploadHelper(Fragment fragment){
         this.fragment = fragment;
@@ -42,10 +53,14 @@ public class UploadHelper {
             public void onClick(DialogInterface dialog, int item) {
                 if (options[item].equals("Take Photo"))
                 {
-                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    File f = new File(android.os.Environment.getExternalStorageDirectory(), "temp.jpg");
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
-                    fragment.startActivityForResult(intent, 1);
+                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+                    try {
+                        fragment.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                    } catch (ActivityNotFoundException e) {
+                        // display error state to the user
+                        Toast.makeText(fragment.getContext(), "An error occurred. Please try again.", Toast.LENGTH_SHORT).show();
+                    }
                 }
                 else if (options[item].equals("Choose from Gallery"))
                 {

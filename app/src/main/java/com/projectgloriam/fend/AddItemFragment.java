@@ -78,6 +78,7 @@ public class AddItemFragment extends Fragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private static final int RESULT_OK = -1;
+    static final int REQUEST_IMAGE_CAPTURE = 1;
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -427,9 +428,11 @@ public class AddItemFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (requestCode == 1) {
-                Bitmap result = uploadHelper.takePhoto();
-                preview.setImageBitmap(result);
+            if (requestCode == REQUEST_IMAGE_CAPTURE) {
+
+                Bundle extras = data.getExtras();
+                Bitmap imageBitmap = (Bitmap) extras.get("data");
+                preview.setImageBitmap(imageBitmap);
                 imageUri = data.getData();
             } else if (requestCode == 2) {
                 Bitmap thumbnail = uploadHelper.chosePhoto(data);
@@ -437,6 +440,7 @@ public class AddItemFragment extends Fragment {
                 imageUri = data.getData();
             }
         }
+
     }
 
 }

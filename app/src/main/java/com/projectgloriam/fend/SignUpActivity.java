@@ -3,8 +3,10 @@ package com.projectgloriam.fend;
 import static android.content.ContentValues.TAG;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -94,8 +96,7 @@ public class SignUpActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
+                            sendEmailVerification();
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "createUserWithEmail:failure", task.getException());
@@ -107,11 +108,44 @@ public class SignUpActivity extends AppCompatActivity {
                 });
     }
 
-    //Navigate to main activity
-    private void updateUI(FirebaseUser user) {
-        // User is signed in
-        Intent mainActivity = new Intent(this, MainActivity.class);
-        mainActivity.putExtra("user", user);
-        startActivity(mainActivity);
+    //Send a user a verification email
+    public void sendEmailVerification() {
+        // [START send_email_verification]
+        FirebaseAuth auth = FirebaseAuth.getInstance();
+        FirebaseUser user = auth.getCurrentUser();
+
+        user.sendEmailVerification()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "Email sent.");
+                            verificationAlert().show();
+                        }
+                    }
+                });
+        // [END send_email_verification]
+    }
+
+    private AlertDialog verificationAlert(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.verification_sent);
+        // Add the buttons
+        builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked OK button
+                backToLogin();
+            }
+        });
+
+        // Create the AlertDialog
+        return builder.create();
+    }
+
+    //Navigate to email activity
+    private void backToLogin() {
+        Intent emailPasswordActivity = new Intent(this, EmailPasswordActivity.class);
+        emailPasswordActivity.putExtra("verify", true);
+        startActivity(emailPasswordActivity);
     }
 }

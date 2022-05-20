@@ -34,6 +34,9 @@ public class EmailPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_email_password);
 
+        //Getting notification to user to verify email
+        getNotification();
+
         // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
@@ -45,6 +48,20 @@ public class EmailPasswordActivity extends AppCompatActivity {
         handleLoginClick();
 
         handleSignUpRedirect();
+    }
+
+    private void getNotification() {
+        Intent intent = getIntent();
+        if (intent.hasExtra("notify")) {
+            boolean verify = intent.getBooleanExtra("notify", false);
+
+            if(verify)
+                verificationMsg();
+        }
+    }
+
+    private void verificationMsg() {
+        Toast.makeText(this, R.string.verify_email, Toast.LENGTH_SHORT).show();
     }
 
     private void handleSignUpRedirect() {
@@ -80,7 +97,7 @@ public class EmailPasswordActivity extends AppCompatActivity {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if(currentUser != null){
+        if(currentUser != null && currentUser.isEmailVerified()){
             reload(currentUser);
         }
     }
@@ -99,7 +116,7 @@ public class EmailPasswordActivity extends AppCompatActivity {
     }
 
     private void reload(FirebaseUser user) {
-        updateUI(user);
+        updateUI();
     }
 
     //Sign in existing users
@@ -112,11 +129,16 @@ public class EmailPasswordActivity extends AppCompatActivity {
                             // Sign in success, update UI with the signed-in user's information
                             Log.d(TAG, "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
-                            updateUI(user);
+
+                            if(user.isEmailVerified()){
+                                updateUI();
+                            } else {
+                                verificationMsg();
+                            }
                         } else {
                             // If sign in fails, display a message to the user.
                             Log.w(TAG, "signInWithEmail:failure", task.getException());
-                            Toast.makeText(EmailPasswordActivity.this, "Authentication failed.",
+                            Toast.makeText(EmailPasswordActivity.this, "The password is invalid.",
                                     Toast.LENGTH_SHORT).show();
                             //updateUI(null);
                         }
@@ -125,10 +147,9 @@ public class EmailPasswordActivity extends AppCompatActivity {
     }
 
     //Navigate to main activity
-    private void updateUI(FirebaseUser user) {
+    private void updateUI() {
         // User is signed in
         Intent mainActivity = new Intent(this, MainActivity.class);
-        mainActivity.putExtra("user", user);
         startActivity(mainActivity);
     }
 

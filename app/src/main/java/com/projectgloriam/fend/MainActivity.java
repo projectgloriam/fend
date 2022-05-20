@@ -206,24 +206,6 @@ public class MainActivity extends AppCompatActivity {
         // [END update_email]
     }
 
-    //Send a user a verification email
-    public void sendEmailVerification() {
-        // [START send_email_verification]
-        FirebaseAuth auth = FirebaseAuth.getInstance();
-        FirebaseUser user = auth.getCurrentUser();
-
-        user.sendEmailVerification()
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Log.d(TAG, "Email sent.");
-                        }
-                    }
-                });
-        // [END send_email_verification]
-    }
-
     public void sendEmailVerificationWithContinueUrl() {
         // [START send_email_verification_with_continue_url]
         FirebaseAuth auth = FirebaseAuth.getInstance();

@@ -55,6 +55,9 @@
     <string name="select_id_card">Select an ID card from the drop down menu</string>
     <string name="none">None</string>
     <string name="account_scroll_view_description">Scroll view for account page</string>
+    <string name="verify_email">Please verify your email</string>
+    <string name="ok">Okay</string>
+    <string name="verification_sent">A verification email has been sent to your email address</string>
 
     <string-array name="card_type_array">
         <item>Ghana Card</item>
