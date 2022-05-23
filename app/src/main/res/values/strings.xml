@@ -63,6 +63,7 @@
     <string name="camera_permission_denied">The scan feature is unavailable because the it requires the camera permission.</string>
     <string name="scan_an_id_or_document">Scan an ID or Document</string>
     <string name="choose_from_gallery">Choose from Gallery</string>
+    <string name="done">Done</string>
 
     <string-array name="card_type_array">
         <item>Ghana Card</item>

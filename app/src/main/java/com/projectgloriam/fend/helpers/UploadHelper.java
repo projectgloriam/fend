@@ -1,5 +1,6 @@
 package com.projectgloriam.fend.helpers;
 
+import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 
 import static androidx.camera.core.ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY;
@@ -21,9 +22,13 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.util.Size;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraControl;
@@ -34,6 +39,7 @@ import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
@@ -64,6 +70,7 @@ public class UploadHelper {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     String currentPhotoPath;
     private ImageCapture imageCapture;
+    AlertDialog cameraDialog;
 
     public UploadHelper(Fragment fragment){
         this.fragment = fragment;
@@ -74,7 +81,7 @@ public class UploadHelper {
                 fragment.getActivity(), Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED) {
             // You can use the API that requires the permission.
-            scanPhoto();
+            showCameraDialog();
         } else if (fragment.shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
             Snackbar permissionSnackbar = Snackbar.make(view, R.string.camera_permission_needed, Snackbar.LENGTH_INDEFINITE)
                     .setAction(R.string.fine, new View.OnClickListener() {
@@ -114,8 +121,39 @@ public class UploadHelper {
         fragment.startActivityForResult(intent, 2);
     }
 
-    private void scanPhoto() {
+    private void showCameraDialog(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getActivity());
+        // Get the layout inflater
+        LayoutInflater inflater = fragment.requireActivity().getLayoutInflater();
+
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        final View view = inflater.inflate(R.layout.preview_frame, null);
+
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        builder.setView(view)
+                // Add action buttons
+                .setPositiveButton(R.string.done, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // Show the camera x preview ...
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        cameraDialog = builder.show();
+        scanPhoto(view);
+    }
+
+    private void scanPhoto(View previewParentLayout) {
+
         Executor cameraExecutor =  Executors.newSingleThreadExecutor();
+
+        PreviewView previewView = previewParentLayout.findViewById(R.id.previewView);
 
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture =
                 ProcessCameraProvider.getInstance(fragment.getActivity());
@@ -148,7 +186,7 @@ public class UploadHelper {
                 cameraProvider.bindToLifecycle(fragment.getActivity(), cameraSelector, imageCapture, imageAnalysis, preview);
 
                 // Connect the preview use case to the previewView
-                //preview.setSurfaceProvider(previewView.getSurfaceProvider());
+                preview.setSurfaceProvider(previewView.getSurfaceProvider());
                 // Create the File where the photo should go
                 File photoFile = null;
                 try {
@@ -164,9 +202,11 @@ public class UploadHelper {
                             new ImageCapture.OnImageSavedCallback() {
                                 @Override
                                 public void onImageSaved(ImageCapture.OutputFileResults outputFileResults) {
+
                                     Intent takePictureIntent = new Intent();
                                     takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileResults.getSavedUri());
-                                    fragment.startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                                    fragment.onActivityResult(REQUEST_IMAGE_CAPTURE, RESULT_OK, takePictureIntent);
+                                    cameraDialog.dismiss();
                                 }
                                 @Override
                                 public void onError(ImageCaptureException error) {
@@ -259,9 +299,9 @@ public class UploadHelper {
         return bitmap;
     }
 
-    public Bitmap chosePhoto(Intent data){
+    public Bitmap chosePhoto(Uri uri){
         try {
-            final Uri imageUri = data.getData();
+            final Uri imageUri = uri;
             final InputStream imageStream = fragment.getActivity().getContentResolver().openInputStream(imageUri);
             Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
             selectedImage=getResizedBitmap(selectedImage, 400);

@@ -13,6 +13,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -436,11 +437,11 @@ public class AddItemFragment extends Fragment {
         if (resultCode == RESULT_OK) {
             if (requestCode == REQUEST_IMAGE_CAPTURE) {
                 Bundle extras = data.getExtras();
-                Bitmap imageBitmap = (Bitmap) extras.get("data");
-                preview.setImageBitmap(imageBitmap);
-                imageUri = data.getData();
+                Bitmap thumbnail = uploadHelper.chosePhoto((Uri) extras.get(MediaStore.EXTRA_OUTPUT));
+                preview.setImageBitmap(thumbnail);
+                imageUri = (Uri) extras.get(MediaStore.EXTRA_OUTPUT);
             } else if (requestCode == 2) {
-                Bitmap thumbnail = uploadHelper.chosePhoto(data);
+                Bitmap thumbnail = uploadHelper.chosePhoto(data.getData());
                 preview.setImageBitmap(thumbnail);
                 imageUri = data.getData();
             }

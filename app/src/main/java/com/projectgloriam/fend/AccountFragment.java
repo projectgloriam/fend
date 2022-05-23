@@ -241,7 +241,7 @@ public class AccountFragment extends Fragment {
                 profilePicture.setImageBitmap(result);
                 profileUrl = data.getData().toString();
             } else if (requestCode == 2) {
-                Bitmap thumbnail = uploadHelper.chosePhoto(data);
+                Bitmap thumbnail = uploadHelper.chosePhoto(data.getData());
                 profilePicture.setImageBitmap(thumbnail);
                 profileUrl = data.getData().toString();
             }
