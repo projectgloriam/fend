@@ -15,6 +15,8 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 import androidx.appcompat.widget.SearchView;
+
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -108,6 +110,17 @@ public class EmailPasswordActivity extends AppCompatActivity {
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
         SearchView searchView = (SearchView) searchItem.getActionView();
+
+        //Set theme to white
+        //EditText titleText = (EditText) searchView.findViewById(androidx.appcompat.R.id.search_bar);
+        //titleText.setTextColor(getResources().getColor(R.color.white));
+
+        EditText searchText = (EditText) searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        searchText.setTextColor(getResources().getColor(R.color.white));
+        searchText.setHintTextColor(getResources().getColor(R.color.whitesmoke));
+
+        ImageView searchIcon = (ImageView) searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
+        searchIcon.setColorFilter(getResources().getColor(R.color.white));
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));

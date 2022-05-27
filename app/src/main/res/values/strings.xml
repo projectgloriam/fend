@@ -42,7 +42,7 @@
     <string name="expiry_reminder">Turn on reminder for expiry dates of items</string>
     <string name="logout">Logout</string>
     <string name="name">Name</string>
-    <string name="scan_or_upload_profile_picture">Scan / Upload</string>
+    <string name="scan_or_upload_profile_picture">Choose picture</string>
     <string name="emergency">Set emergency contact</string>
     <string name="emergency_telephone">Emergency Telephone</string>
     <string name="emergency_email">Emergency Email</string>
@@ -61,7 +61,7 @@
     <string name="camera_permission_needed">Camera permission is needed to scan your IDs or Documents.</string>
     <string name="fine">Fine</string>
     <string name="camera_permission_denied">The scan feature is unavailable because the it requires the camera permission.</string>
-    <string name="scan_an_id_or_document">Scan an ID or Document</string>
+    <string name="scan_an_id_or_document">Scan</string>
     <string name="choose_from_gallery">Choose from Gallery</string>
     <string name="done">Done</string>
     <string name="uploadTitle">File uploading ...</string>

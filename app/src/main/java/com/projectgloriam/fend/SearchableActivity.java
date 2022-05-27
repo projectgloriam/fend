@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import androidx.appcompat.widget.SearchView;
 import android.widget.Toast;
@@ -81,6 +83,13 @@ public class SearchableActivity extends AppCompatActivity {
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
         SearchView searchView = (SearchView) searchItem.getActionView();
+
+        EditText searchText = (EditText) searchView.findViewById(androidx.appcompat.R.id.search_src_text);
+        searchText.setTextColor(getResources().getColor(R.color.white));
+        searchText.setHintTextColor(getResources().getColor(R.color.whitesmoke));
+
+        ImageView searchIcon = (ImageView) searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
+        searchIcon.setColorFilter(getResources().getColor(R.color.white));
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
