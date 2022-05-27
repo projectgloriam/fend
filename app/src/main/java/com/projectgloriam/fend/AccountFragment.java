@@ -2,6 +2,8 @@ package com.projectgloriam.fend;
 
 import static android.content.ContentValues.TAG;
 
+import static com.projectgloriam.fend.AddItemFragment.REQUEST_IMAGE_CAPTURE;
+
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -14,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -236,10 +239,12 @@ public class AccountFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            if (requestCode == 1) {
-                Bitmap result = uploadHelper.takePhoto();
-                profilePicture.setImageBitmap(result);
-                profileUrl = data.getData().toString();
+            if (requestCode == REQUEST_IMAGE_CAPTURE) {
+                Bundle extras = data.getExtras();
+                Bitmap thumbnail = uploadHelper.chosePhoto((Uri) extras.get(MediaStore.EXTRA_OUTPUT));
+                profilePicture.setImageBitmap(thumbnail);
+                profileUrl = extras.get(MediaStore.EXTRA_OUTPUT).toString();
+
             } else if (requestCode == 2) {
                 Bitmap thumbnail = uploadHelper.chosePhoto(data.getData());
                 profilePicture.setImageBitmap(thumbnail);

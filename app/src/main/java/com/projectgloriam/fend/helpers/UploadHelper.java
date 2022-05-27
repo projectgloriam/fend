@@ -34,6 +34,7 @@ import androidx.camera.core.Camera;
 import androidx.camera.core.CameraControl;
 import androidx.camera.core.CameraInfo;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.CameraX;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
@@ -134,12 +135,12 @@ public class UploadHelper {
         // Pass null as the parent view because its going in the dialog layout
         builder.setView(view)
                 // Add action buttons
-                .setPositiveButton(R.string.done, new DialogInterface.OnClickListener() {
+                /*.setPositiveButton(R.string.done, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         // Show the camera x preview ...
                     }
-                })
+                })*/
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         dialog.cancel();
@@ -209,6 +210,7 @@ public class UploadHelper {
                                             Intent takePictureIntent = new Intent();
                                             takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileResults.getSavedUri());
                                             fragment.onActivityResult(REQUEST_IMAGE_CAPTURE, RESULT_OK, takePictureIntent);
+                                            cameraProvider.unbindAll();
                                         }
                                     });
 

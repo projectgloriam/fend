@@ -3,6 +3,7 @@ package com.projectgloriam.fend;
 import static android.content.ContentValues.TAG;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -32,11 +33,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -283,37 +287,8 @@ public class AddItemFragment extends Fragment {
                 if (!checkPhotoIsSet())
                     return;
 
-                uploadImage()// Register observers to listen for when the download is done or if it fails
-                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                        double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                        Log.d(TAG, "Upload is " + progress + "% done");
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        // Handle unsuccessful uploads
-                        Toast.makeText(getContext(), "Image upload failed. Please try again", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        imageUrl = taskSnapshot.getMetadata().getPath();
-                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
-                        Toast.makeText(getContext(), "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+                uploadImage(); // Register observers to listen for when the download is done or if it fails
 
-                        //If it is an ID card...
-                        if (cardOrDocRadioButton.getText().toString().equals(idCard)) {
-                            saveIdCard();
-                            //If it is an Document...
-                        } else if (cardOrDocRadioButton.getText().toString().equals(doc)) {
-                            saveDocument();
-                        }
-                    }
-                });
             }
         });
 
@@ -340,12 +315,59 @@ public class AddItemFragment extends Fragment {
         }
     }
 
-    private UploadTask uploadImage() {
+    private void uploadImage() {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setCancelable(false);
+        dialog.setContentView(R.layout.progress_dialog);
+
+        final ProgressBar uploadPb = (ProgressBar) dialog.findViewById(R.id.uploadProgressBar);
+        final TextView percentage = dialog.findViewById(R.id.percentageView);
+
         //Folder is either "docs" or "cards"
         docImageRef = ((MainActivity)getActivity()).storageRef.child("images/"+imageUri.getLastPathSegment());
         UploadTask uploadTask = docImageRef.putFile(imageUri);
+        uploadTask.addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                        uploadPb.setProgress((int) progress);
+                        percentage.setText(String.valueOf((int) progress) + "%");
 
-        return uploadTask;
+                        if (progress == 100) {
+                            dialog.dismiss();
+                        }
+                        Log.d(TAG, "Upload is " + progress + "% done");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception exception) {
+                        // Handle unsuccessful uploads
+                        Toast.makeText(getContext(), "Image upload failed. Please try again", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        imageUrl = taskSnapshot.getMetadata().getPath();
+                        // taskSnapshot.getMetadata() contains file metadata such as size, content-type, etc.
+                        Toast.makeText(getContext(), "Image uploaded successfully", Toast.LENGTH_SHORT).show();
+
+                        //If it is an ID card...
+                        if (cardOrDocRadioButton.getText().toString().equals(idCard)) {
+                            saveIdCard();
+                            //If it is an Document...
+                        } else if (cardOrDocRadioButton.getText().toString().equals(doc)) {
+                            saveDocument();
+                        }
+                    }
+                });
+
+        dialog.show();
+
+        Window window = dialog.getWindow();
+        window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT);
     }
 
     private void saveDocument() {

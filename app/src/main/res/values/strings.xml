@@ -64,6 +64,8 @@
     <string name="scan_an_id_or_document">Scan an ID or Document</string>
     <string name="choose_from_gallery">Choose from Gallery</string>
     <string name="done">Done</string>
+    <string name="uploadTitle">File uploading ...</string>
+    <string name="testPercentage">--%</string>
 
     <string-array name="card_type_array">
         <item>Ghana Card</item>

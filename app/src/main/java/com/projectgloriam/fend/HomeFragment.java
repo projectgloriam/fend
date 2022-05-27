@@ -112,7 +112,8 @@ public class HomeFragment extends Fragment {
         user = ((MainActivity)getActivity()).getUserProfile();
         //Setting welcome text
         Resources res = getResources();
-        String welcome_text = String.format(res.getString(R.string.welcome_user), user.getName());
+        String welcomeName = user.getName() == null ? "" : user.getName();
+        String welcome_text = String.format(res.getString(R.string.welcome_user), welcomeName);
         welcome = view.findViewById(R.id.welcomeTextView);
         welcome.setText(welcome_text);
 
