@@ -2,6 +2,7 @@ package com.projectgloriam.fend;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -56,6 +57,9 @@ public class SearchableActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_searchable);
 
+        Toolbar toolbar = findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
+
         db = FirebaseFirestore.getInstance();
 
         pb = findViewById(R.id.progressBar);
@@ -83,13 +87,6 @@ public class SearchableActivity extends AppCompatActivity {
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
         SearchView searchView = (SearchView) searchItem.getActionView();
-
-        EditText searchText = (EditText) searchView.findViewById(androidx.appcompat.R.id.search_src_text);
-        searchText.setTextColor(getResources().getColor(R.color.white));
-        searchText.setHintTextColor(getResources().getColor(R.color.whitesmoke));
-
-        ImageView searchIcon = (ImageView) searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
-        searchIcon.setColorFilter(getResources().getColor(R.color.white));
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));

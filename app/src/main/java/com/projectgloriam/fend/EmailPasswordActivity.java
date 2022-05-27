@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -18,6 +19,7 @@ import androidx.appcompat.widget.SearchView;
 
 import android.widget.ImageView;
 import android.widget.Toast;
+import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -35,6 +37,9 @@ public class EmailPasswordActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_email_password);
+
+        Toolbar toolbar = findViewById(R.id.app_bar);
+        setSupportActionBar(toolbar);
 
         //Getting notification to user to verify email
         getNotification();
@@ -110,17 +115,6 @@ public class EmailPasswordActivity extends AppCompatActivity {
         MenuItem searchItem = menu.findItem(R.id.action_search);
 
         SearchView searchView = (SearchView) searchItem.getActionView();
-
-        //Set theme to white
-        //EditText titleText = (EditText) searchView.findViewById(androidx.appcompat.R.id.search_bar);
-        //titleText.setTextColor(getResources().getColor(R.color.white));
-
-        EditText searchText = (EditText) searchView.findViewById(androidx.appcompat.R.id.search_src_text);
-        searchText.setTextColor(getResources().getColor(R.color.white));
-        searchText.setHintTextColor(getResources().getColor(R.color.whitesmoke));
-
-        ImageView searchIcon = (ImageView) searchView.findViewById(androidx.appcompat.R.id.search_mag_icon);
-        searchIcon.setColorFilter(getResources().getColor(R.color.white));
 
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
