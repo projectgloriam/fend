@@ -202,11 +202,16 @@ public class UploadHelper {
                             new ImageCapture.OnImageSavedCallback() {
                                 @Override
                                 public void onImageSaved(ImageCapture.OutputFileResults outputFileResults) {
+                                    fragment.getActivity().runOnUiThread(new Runnable(){
+                                        public void run()
+                                        {
+                                            cameraDialog.dismiss();
+                                            Intent takePictureIntent = new Intent();
+                                            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileResults.getSavedUri());
+                                            fragment.onActivityResult(REQUEST_IMAGE_CAPTURE, RESULT_OK, takePictureIntent);
+                                        }
+                                    });
 
-                                    Intent takePictureIntent = new Intent();
-                                    takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileResults.getSavedUri());
-                                    fragment.onActivityResult(REQUEST_IMAGE_CAPTURE, RESULT_OK, takePictureIntent);
-                                    cameraDialog.dismiss();
                                 }
                                 @Override
                                 public void onError(ImageCaptureException error) {
@@ -215,9 +220,6 @@ public class UploadHelper {
                                 }
                             }
                     );
-                                /*Uri photoURI = FileProvider.getUriForFile(fragment.getActivity(),
-                                        "com.projectgloriam.fend.fileprovider",
-                                        photoFile);*/
                 }
 
             } catch (InterruptedException | ExecutionException e) {

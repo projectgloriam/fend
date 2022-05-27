@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,6 +61,8 @@ public class HomeFragment extends Fragment {
     private TextView welcome;
     // Access a Cloud Firestore instance
     FirebaseFirestore db;
+    ProgressBar userPb;
+    boolean areCardsReady, areDocsReady = false;
 
     private User user;
 
@@ -104,6 +107,8 @@ public class HomeFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        userPb = view.findViewById(R.id.userIdsProgressBar);
+
         user = ((MainActivity)getActivity()).getUserProfile();
         //Setting welcome text
         Resources res = getResources();
@@ -144,6 +149,7 @@ public class HomeFragment extends Fragment {
 
         ArrayList<Card> cDataset = new ArrayList<>();
 
+        userPb.setVisibility(View.VISIBLE);
         //Getting the ID cards
         db.collection("cards")
                 .whereEqualTo("uid", user.getUid())
@@ -163,6 +169,12 @@ public class HomeFragment extends Fragment {
                             Toast.makeText(getActivity(), "Your ID card list is empty", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "Error getting ID Cards: ", task.getException());
                         }
+
+                        areCardsReady = true;
+
+                        if(areCardsReady && areDocsReady)
+                            userPb.setVisibility(View.GONE);
+
                     }
                 });
 
@@ -197,6 +209,12 @@ public class HomeFragment extends Fragment {
                             Toast.makeText(getActivity(), "Your documents list is empty", Toast.LENGTH_SHORT).show();
                             Log.d(TAG, "Error getting documents: ", task.getException());
                         }
+
+                        areDocsReady = true;
+
+                        if(areCardsReady && areDocsReady)
+                            userPb.setVisibility(View.GONE);
+
                     }
                 });
     }

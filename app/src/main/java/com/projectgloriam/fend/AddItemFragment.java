@@ -54,6 +54,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.projectgloriam.fend.helpers.UploadHelper;
@@ -283,13 +284,21 @@ public class AddItemFragment extends Fragment {
                     return;
 
                 uploadImage()// Register observers to listen for when the download is done or if it fails
-                        .addOnFailureListener(new OnFailureListener() {
+                .addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                        double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                        Log.d(TAG, "Upload is " + progress + "% done");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception exception) {
                         // Handle unsuccessful uploads
                         Toast.makeText(getContext(), "Image upload failed. Please try again", Toast.LENGTH_SHORT).show();
                     }
-                }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                })
+                .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                         imageUrl = taskSnapshot.getMetadata().getPath();
